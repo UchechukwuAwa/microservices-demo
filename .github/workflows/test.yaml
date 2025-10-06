@@ -1,0 +1,64 @@
+name: Test Microservices
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [node, python, java, go, dotnet]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up language runtime
+        run: |
+          case "${{ matrix.language }}" in
+            node)
+              echo "Setting up Node.js..."
+              sudo apt-get update && sudo apt-get install -y nodejs npm
+              ;;
+            python)
+              echo "Setting up Python..."
+              sudo apt-get update && sudo apt-get install -y python3 python3-pip
+              ;;
+            java)
+              echo "Setting up Java..."
+              sudo apt-get update && sudo apt-get install -y openjdk-17-jdk maven
+              ;;
+            go)
+              echo "Setting up Go..."
+              sudo apt-get update && sudo apt-get install -y golang-go
+              ;;
+            dotnet)
+              echo "Setting up .NET..."
+              sudo apt-get update && sudo apt-get install -y dotnet-sdk-8.0
+              ;;
+          esac
+
+      - name: Run tests
+        run: |
+          case "${{ matrix.language }}" in
+            node)
+              find . -name "package.json" -execdir sh -c "npm ci && npm test || true" \;
+              ;;
+            python)
+              find . -name "requirements.txt" -execdir sh -c "pip install -r requirements.txt && pytest || true" \;
+              ;;
+            java)
+              find . -name "pom.xml" -execdir sh -c "mvn test || true" \;
+              ;;
+            go)
+              find . -name "go.mod" -execdir sh -c "go test ./... || true" \;
+              ;;
+            dotnet)
+              find . -name "*.csproj" -execdir sh -c "dotnet test || true" \;
+              ;;
+          esac

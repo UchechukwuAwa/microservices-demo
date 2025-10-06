@@ -1,0 +1,28 @@
+name: Release and Tag Images
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Tagged Images
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          for service in adservice cartservice checkoutservice currencyservice emailservice frontend loadgenerator paymentservice productcatalogservice recommendationservice shippingservice; do
+            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$service:$VERSION src/$service
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/$service:$VERSION
+          done

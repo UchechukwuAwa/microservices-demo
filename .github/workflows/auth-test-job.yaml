@@ -1,0 +1,11 @@
+jobs:
+  test-k8s:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Check cluster access
+        run: kubectl get nodes

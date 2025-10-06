@@ -1,0 +1,55 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Docker Images"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Download artifacts from build workflow
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: image_tag
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.33.0'
+
+      - name: Configure Kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig-github.yaml
+          export KUBECONFIG=$PWD/kubeconfig-github.yaml
+
+      - name: Set Docker Hub user and image tag
+        run: |
+          echo "DOCKERHUB_USER=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_ENV
+
+      - name: Update images in manifest
+        run: |
+          sed -i "s|image: .*adservice.*|image: $DOCKERHUB_USER/uche-repository/adservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*cartservice.*|image: $DOCKERHUB_USER/uche-repository/cartservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*checkoutservice.*|image: $DOCKERHUB_USER/uche-repository/checkoutservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*currencyservice.*|image: $DOCKERHUB_USER/uche-repository/currencyservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*emailservice.*|image: $DOCKERHUB_USER/uche-repository/emailservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*frontend.*|image: $DOCKERHUB_USER/uche-repository/frontend:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*loadgenerator.*|image: $DOCKERHUB_USER/uche-repository/loadgenerator:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*paymentservice.*|image: $DOCKERHUB_USER/uche-repository/paymentservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*productcatalogservice.*|image: $DOCKERHUB_USER/uche-repository/productcatalogservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*recommendationservice.*|image: $DOCKERHUB_USER/uche-repository/recommendationservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*shippingservice.*|image: $DOCKERHUB_USER/uche-repository/shippingservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*shoppingassistantservice.*|image: $DOCKERHUB_USER/uche-repository/shoppingassistantservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+
+      - name: Deploy to Kubernetes
+        run: kubectl apply -f ./microservices-demo/release/kubernetes-manifests.yaml
