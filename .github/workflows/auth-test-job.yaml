@@ -2,10 +2,15 @@ jobs:
   test-k8s:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.33.0'
+
       - name: Configure kubeconfig
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          export KUBECONFIG=$HOME/.kube/config
 
       - name: Check cluster access
         run: kubectl get nodes

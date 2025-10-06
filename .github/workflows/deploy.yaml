@@ -17,7 +17,7 @@ jobs:
 
       - name: Download artifacts from build workflow
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: image_tag
 
@@ -38,18 +38,18 @@ jobs:
 
       - name: Update images in manifest
         run: |
-          sed -i "s|image: .*adservice.*|image: $DOCKERHUB_USER/uche-repository/adservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*cartservice.*|image: $DOCKERHUB_USER/uche-repository/cartservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*checkoutservice.*|image: $DOCKERHUB_USER/uche-repository/checkoutservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*currencyservice.*|image: $DOCKERHUB_USER/uche-repository/currencyservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*emailservice.*|image: $DOCKERHUB_USER/uche-repository/emailservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*frontend.*|image: $DOCKERHUB_USER/uche-repository/frontend:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*loadgenerator.*|image: $DOCKERHUB_USER/uche-repository/loadgenerator:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*paymentservice.*|image: $DOCKERHUB_USER/uche-repository/paymentservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*productcatalogservice.*|image: $DOCKERHUB_USER/uche-repository/productcatalogservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*recommendationservice.*|image: $DOCKERHUB_USER/uche-repository/recommendationservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*shippingservice.*|image: $DOCKERHUB_USER/uche-repository/shippingservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
-          sed -i "s|image: .*shoppingassistantservice.*|image: $DOCKERHUB_USER/uche-repository/shoppingassistantservice:$IMAGE_TAG|g" ./microservices-demo/release/kubernetes-manifests.yaml
+          sed -i "s|image: .*adservice.*|image: $DOCKERHUB_USER/uche-repository/adservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*cartservice.*|image: $DOCKERHUB_USER/uche-repository/cartservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*checkoutservice.*|image: $DOCKERHUB_USER/uche-repository/checkoutservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*currencyservice.*|image: $DOCKERHUB_USER/uche-repository/currencyservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*emailservice.*|image: $DOCKERHUB_USER/uche-repository/emailservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*frontend.*|image: $DOCKERHUB_USER/uche-repository/frontend:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*loadgenerator.*|image: $DOCKERHUB_USER/uche-repository/loadgenerator:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*paymentservice.*|image: $DOCKERHUB_USER/uche-repository/paymentservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*productcatalogservice.*|image: $DOCKERHUB_USER/uche-repository/productcatalogservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*recommendationservice.*|image: $DOCKERHUB_USER/uche-repository/recommendationservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*shippingservice.*|image: $DOCKERHUB_USER/uche-repository/shippingservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
+          sed -i "s|image: .*shoppingassistantservice.*|image: $DOCKERHUB_USER/uche-repository/shoppingassistantservice:$IMAGE_TAG|g" ./release/kubernetes-manifests.yaml
 
       - name: Deploy to Kubernetes
-        run: kubectl apply -f ./microservices-demo/release/kubernetes-manifests.yaml
+        run: kubectl apply -f ./release/kubernetes-manifests.yaml

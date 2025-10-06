@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $DOCKERHUB_USER/uche-repository/${{ matrix.service }}:$IMAGE_TAG ./microservices-demo/src/${{ matrix.service }}
+          docker build -t $DOCKERHUB_USER/uche-repository/${{ matrix.service }}:$IMAGE_TAG ./src/${{ matrix.service }}
 
       - name: Push Docker image
         run: |
