@@ -37,8 +37,8 @@ jobs:
           docker push $DOCKERHUB_USER/uche-repository/${{ matrix.service }}:$IMAGE_TAG
 
       - name: Save image tag for deploy workflow
-        run: echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
         id: export-tag
+        run: echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
 
-  outputs:
-    image_tag: ${{ steps.export-tag.outputs.image_tag }}
+    outputs:
+      image_tag: ${{ steps.export-tag.outputs.image_tag }}
