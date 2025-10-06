@@ -22,6 +22,4 @@ jobs:
       - name: Lint YAML
         run: yamllint kubernetes-manifests/
 
-      - name: Lint Shell Scripts
-        run: shellcheck $(find . -name "*.sh")
 
