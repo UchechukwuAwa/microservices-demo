@@ -9,22 +9,38 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    
-    # The matrix runs 12 parallel jobs, one for each service.
     strategy:
       matrix:
+        # Runs a job for each service defined here
         service: [adservice, cartservice, checkoutservice, currencyservice, emailservice, frontend, loadgenerator, paymentservice, productcatalogservice, recommendationservice, shippingservice, shoppingassistantservice]
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Use the official setup-buildx action for improved Docker building
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        
+      # --- TEMPORARY DEBUGGING STEP ---
+      # This step will help you locate the Dockerfile path.
+      - name: Debug File Paths
+        run: |
+          echo "--- Current Working Directory (Root of Repository) ---"
+          pwd
+          echo "--- Listing contents of src/ (Recursively) ---"
+          # This command lists all files in 'src/' and its subdirectories
+          ls -R ./src
+          echo "---------------------------------------------------"
+          
+          # This conditional check uses the path defined in your matrix setup
+          if [ -f ./src/cartservice/Dockerfile ]; then
+            echo "SUCCESS: Dockerfile found at ./src/cartservice/Dockerfile"
+          else
+            echo "FAILURE: Dockerfile NOT found at ./src/cartservice/Dockerfile"
+            echo "Review the 'Listing contents' section above to find the correct path."
+          fi
+          echo "---------------------------------------------------"
+      # --- END OF TEMPORARY DEBUGGING STEP ---
+
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -32,16 +48,16 @@ jobs:
       - name: Build and Push Docker image
         uses: docker/build-push-action@v5
         with:
-          # Define the context (where the Dockerfile is located)
+          # This is the path the action will use to find the Dockerfile (it assumes 'Dockerfile' inside this context)
           context: ./src/${{ matrix.service }}
-          # Use the latest tag and the commit SHA for tagging
+          
+          # Set the destination tags
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/uche-repository/${{ matrix.service }}:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/uche-repository/${{ matrix.service }}:latest
           push: true
-          # Enable caching for faster rebuilds
+          
+          # Enable GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-# No job 'outputs' are needed here, as the tag is always available via ${{ github.sha }}
 
