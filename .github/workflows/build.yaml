@@ -1,43 +1,23 @@
 name: Build & Push Docker Images
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+# ... (trigger configuration remains the same)
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Runs a job for each service defined here
         service: [adservice, cartservice, checkoutservice, currencyservice, emailservice, frontend, loadgenerator, paymentservice, productcatalogservice, recommendationservice, shippingservice, shoppingassistantservice]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # --- TEMPORARY DEBUGGING STEP ---
-      # This step will help you locate the Dockerfile path.
-      - name: Debug File Paths
-        run: |
-          echo "--- Current Working Directory (Root of Repository) ---"
-          pwd
-          echo "--- Listing contents of src/ (Recursively) ---"
-          # This command lists all files in 'src/' and its subdirectories
-          ls -R ./src
-          echo "---------------------------------------------------"
-          
-          # This conditional check uses the path defined in your matrix setup
-          if [ -f ./src/cartservice/Dockerfile ]; then
-            echo "SUCCESS: Dockerfile found at ./src/cartservice/Dockerfile"
-          else
-            echo "FAILURE: Dockerfile NOT found at ./src/cartservice/Dockerfile"
-            echo "Review the 'Listing contents' section above to find the correct path."
-          fi
-          echo "---------------------------------------------------"
-      # --- END OF TEMPORARY DEBUGGING STEP ---
+      # --- 1. SETUP BUILDX (NEW REQUIRED STEP) ---
+      # This enables the 'container' driver which supports GHA caching.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -48,16 +28,12 @@ jobs:
       - name: Build and Push Docker image
         uses: docker/build-push-action@v5
         with:
-          # This is the path the action will use to find the Dockerfile (it assumes 'Dockerfile' inside this context)
           context: ./src/${{ matrix.service }}
-          
-          # Set the destination tags
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/uche-repository/${{ matrix.service }}:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/uche-repository/${{ matrix.service }}:latest
           push: true
-          
-          # Enable GitHub Actions cache
+          # GHA caching will now work because Buildx is configured correctly.
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
